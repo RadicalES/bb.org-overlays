@@ -71,7 +71,6 @@
 #define BONE_P9_13 0x074
 #define BONE_P9_14 0x048
 #define BONE_P9_15 0x040
-#define BONE_P9_15_2 0x088
 #define BONE_P9_16 0x04C
 
 #define BONE_P9_17 0x15C
