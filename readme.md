@@ -2,6 +2,9 @@ Build Status
 
  [![Build Status](http://gfnd.rcn-ee.org:8080/buildStatus/icon?job=beagleboard_overlays/master)](http://gfnd.rcn-ee.org:8080/job/beagleboard_overlays/job/master/)
 
+Radical-Robots:
+---------------
+Support for Robot-T220 & Robot-T420
 
 Users:
 ------------
