@@ -431,7 +431,7 @@
 			/* Laird / Marvell sd8897 card enable/irq GPIOs. */
 			wlan_pins_default: pinmux_wlan_pins {
 				pinctrl-single,pins = <
-					BONE_P8_08  (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* P8_8: TIMER7/GPIO2_3 WL_EN */
+					BONE_P8_08  (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* P8_8: TIMER7/GPIO2_3 WL_EN */
 					BONE_P9_23 (PIN_INPUT_PULLUP | MUX_MODE7)	/* P9_23: GPIO1_17 WL_IRQ */
 				>;
 			};
@@ -446,19 +446,19 @@
 
 			uart1_pins_default: pinmux_bb_uart1_pins_default {
 				pinctrl-single,pins = <
-					BONE_P9_26 ( PIN_INPUT  | MUX_MODE0 )	/* P9_26: (D16) uart1_rxd.uart1_rxd */
-					BONE_P9_24 ( PIN_OUTPUT | MUX_MODE0 )	/* P9_24: (D15) uart1_txd.uart1_txd */
-					BONE_P9_20 ( PIN_INPUT  | MUX_MODE0 )	/* P9_20: (D18) uart1_ctsn.uart1_ctsn */
-					BONE_P9_19 ( PIN_OUTPUT | MUX_MODE0 )	/* P9_19: (D17) uart1_rtsn.uart1_rtsn  */
+					BONE_P9_26 ( PIN_INPUT_PULLUP  | MUX_MODE0 )	/* P9_26: (D16) uart1_rxd.uart1_rxd */
+					BONE_P9_24 ( PIN_OUTPUT_PULLDOWN | MUX_MODE0 )	/* P9_24: (D15) uart1_txd.uart1_txd */
+					BONE_P9_20 ( PIN_INPUT_PULLUP  | MUX_MODE0 )	/* P9_20: (D18) uart1_ctsn.uart1_ctsn */
+					BONE_P9_19 ( PIN_OUTPUT_PULLDOWN | MUX_MODE0 )	/* P9_19: (D17) uart1_rtsn.uart1_rtsn  */
 				>;
 			};
 
 			uart1_pins_sleep: pinmux_bb_uart1_pins_sleep {
 				pinctrl-single,pins = <
 					BONE_P9_26 ( PIN_INPUT  | MUX_MODE0 )	/* P9_26: (D16) uart1_rxd.uart1_rxd */
-					BONE_P9_24 ( PIN_OUTPUT | MUX_MODE0 )	/* P9_24: (D15) uart1_txd.uart1_txd */
+					BONE_P9_24 ( PIN_INPUT | MUX_MODE0 )	/* P9_24: (D15) uart1_txd.uart1_txd */
 					BONE_P9_20 ( PIN_INPUT  | MUX_MODE0 )	/* P9_20: (D18) uart1_ctsn.uart1_ctsn */
-					BONE_P9_19 ( PIN_OUTPUT | MUX_MODE0 )	/* P9_19: (D17) uart1_rtsn.uart1_rtsn  */
+					BONE_P9_19 ( PIN_INPUT | MUX_MODE0 )	/* P9_19: (D17) uart1_rtsn.uart1_rtsn  */
 				>;
 			};
 			
@@ -471,11 +471,15 @@
         __overlay__ {
 
 			wlan_reg: fixedregulator@2 {
-				regulator-always-on;
 				compatible = "regulator-fixed";
 				regulator-name = "wlan-regulator";
 				regulator-min-microvolt = <3300000>;
 				regulator-max-microvolt = <3300000>;
+				startup-delay-us= <70000>;
+
+				/* WL_EN */
+				// gpio = <&gpio2 3 0>;
+				// enable-active-high;
 			};
 
 		};
@@ -483,6 +487,7 @@
 
 	fragment@11 {
 		target = <&mmc3>;
+		//@47810000
 		__overlay__ {
 			dmas = <&edma_xbar 12 0 1
 						&edma_xbar 13 0 2>;
@@ -499,14 +504,16 @@
 			cap-power-off-card;
 			keep-power-in-suspend;
 			max-frequency = <25000000>;
-
+			broken-cd;
+			
 			#address-cells = <1>;
 			#size-cells = <0>;
-			wlcore: wlcore@2 {
+			wlcore: wlcore@1 {
 				compatible = "marvell,sd8997";
-				reg = <2>;
+				reg = <1>;
 				interrupt-parent = <&gpio1>;
 				interrupts = <17 IRQ_TYPE_LEVEL_LOW>;
+				pmu-en-gpios = <&gpio2 3 0>;
 			};
 		};
 	};
@@ -514,17 +521,16 @@
 	fragment@12 {
 		target = <&uart1>;
 		__overlay__ {
-			pinctrl-names = "default", "sleep";
+			pinctrl-names = "default";
 			pinctrl-0 = <&uart1_pins_default &bt_pins_default>;
-			pinctrl-1 = <&uart1_pins_sleep &bt_pins_sleep>;
 			status = "okay";
 
-			bluetooth {
-				compatible = "marvell,sd8897-bt";
-				enable-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
-				interrupt-parent = <&gpio3>;
-				interrupts = <19 IRQ_TYPE_LEVEL_LOW>;
-			};
+			// bluetooth {
+			// 	compatible = "mrvl,88w8897";
+			// 	enable-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+			// 	interrupt-parent = <&gpio3>;
+			// 	interrupts = <19 IRQ_TYPE_LEVEL_LOW>;
+			// };
 		};
 	};
 
